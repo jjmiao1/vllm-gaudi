@@ -4,11 +4,12 @@ from typing import Optional, Tuple
 from vllm.config import VllmConfig
 from vllm.distributed import get_pp_group
 from vllm.model_executor.models.utils import PPMissingLayer, maybe_prefix
-from vllm.model_executor.models.hunyuan_v1 import (HunYuanAttention,
+from vllm.model_executor.models.hunyuan_v1 import (HunYuanAttention,HunYuanDecoderLayer,HunYuanSparseMoeBlock,
                                                     HunYuanModel,
                                                     HunyuanV1ModelBase)
 from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
 from vllm.model_executor.layers.logits_processor import LogitsProcessor
+from vllm.model_executor.models.interfaces import MixtureOfExperts
 
 class HpuHunYuanAttention(HunYuanAttention):
     def forward(
@@ -72,4 +73,54 @@ class HpuHunYuanDenseV1Base(HpuHunyuanV1ModelBase):
     pass
 
 class HpuHunYuanDenseV1ForCausalLM(HpuHunYuanDenseV1Base):
+    pass
+
+class HpuHunYuanMoEV1Base(HpuHunyuanV1ModelBase, MixtureOfExperts):
+    def __init__(self, *, vllm_config: VllmConfig, prefix: str = ""):
+        super().__init__(vllm_config=vllm_config, prefix=prefix)
+
+        self.expert_weights = []
+        self.num_expert_groups = 1
+        self.moe_layers = []
+        example_layer = None
+
+        for layer in self.model.layers:
+            if isinstance(layer, PPMissingLayer):
+                continue
+
+            assert isinstance(layer, HunYuanDecoderLayer)
+            if isinstance(layer.mlp, HunYuanSparseMoeBlock):
+                example_layer = layer.mlp
+                self.moe_layers.append(layer.mlp.experts)
+
+        if example_layer is None:
+            raise RuntimeError("No HunYuanMoE layer found in model.layers.")
+
+        self.num_moe_layers = len(self.moe_layers)
+        self.num_logical_experts = example_layer.n_logical_experts
+        self.num_physical_experts = example_layer.n_physical_experts
+        self.num_local_physical_experts = example_layer.n_local_physical_experts
+        self.num_routed_experts = example_layer.n_routed_experts
+        self.num_redundant_experts = example_layer.n_redundant_experts
+
+    def update_physical_experts_metadata(
+        self,
+        num_physical_experts: int,
+        num_local_physical_experts: int,
+    ) -> None:
+        assert self.num_local_physical_experts == num_local_physical_experts
+        self.num_physical_experts = num_physical_experts
+        self.num_local_physical_experts = num_local_physical_experts
+        self.num_redundant_experts = num_physical_experts - self.num_logical_experts
+        for layer in self.model.layers:
+            if isinstance(layer.mlp, HunYuanSparseMoeBlock):
+                moe = layer.mlp
+                moe.n_local_physical_experts = num_local_physical_experts
+                moe.n_physical_experts = num_physical_experts
+                moe.n_redundant_experts = self.num_redundant_experts
+                moe.experts.update_expert_map()
+
+    def get_expert_mapping(self) -> list[tuple[str, str, int, str]]:
+        return self.model.get_expert_mapping()
+class HpuHunYuanMoEV1ForCausalLM(HpuHunYuanMoEV1Base):
     pass

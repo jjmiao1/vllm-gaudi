@@ -8,10 +8,15 @@ def main():
     "0.999 compares to 0.9 is ",
     "The capital of France is",
     "The future of AI is",
+    "Hello, my name is",
+    "0.999 compares to 0.9 is ",
+    "The capital of France is",
+    "The future of AI is",
     ]
     sampling_params = SamplingParams(temperature=0, max_tokens=50)
     #model = "/data/Qwen3-30B-A3B"
-    model = "/data/Hunyuan-7B-Instruct"
+    #model = "/data/Hunyuan-7B-Instruct"
+    model = "/data/Hunyuan-A13B-Instruct"
 # model = "meta-llama/Llama-3.2-1B-Instruct"
 # model = "/mnt/weka/llm/DeepSeek-V2-Lite-Chat/"
 # model = "/mnt/weka/data/mlperf_models/Mixtral-8x7B-Instruct-v0.1"
