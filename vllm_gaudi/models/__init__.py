@@ -10,3 +10,6 @@ def register_model():
     ModelRegistry.register_model(
          "HunYuanDenseV1ForCausalLM",
          "vllm_gaudi.models.hunyuan_v1:HpuHunYuanDenseV1ForCausalLM")
+    ModelRegistry.register_model(
+         "HunYuanMoEV1ForCausalLM",
+         "vllm_gaudi.models.hunyuan_v1:HpuHunYuanMoEV1ForCausalLM")
