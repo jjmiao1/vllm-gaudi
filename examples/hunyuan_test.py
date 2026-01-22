@@ -13,7 +13,7 @@ import argparse
 file_path = os.path.abspath(__file__)
 dataset_path = os.path.join(os.path.dirname(file_path), "../benchmarks")
 
-model_path = "/data/Hunyuan-A13B-Instruct"
+model_path = "/data/Hunyuan-A13B-Instruct-FP8-G2"
 
 # Parse the command-line arguments.
 parser = argparse.ArgumentParser()
