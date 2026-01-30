@@ -15,3 +15,10 @@ def register_model():
     from vllm_gaudi.models.qwen3_vl import HpuQwen3_VLForConditionalGeneration  # noqa: F401
     ModelRegistry.register_model("Qwen3VLForConditionalGeneration",
                                  "vllm_gaudi.models.qwen3_vl:HpuQwen3_VLForConditionalGeneration")
+    
+    from vllm_gaudi.models.qwen2_5_omni_thinker import HpuQwen2_5OmniThinkerForConditionalGeneration # noqa: F401
+    ModelRegistry.register_model("Qwen2_5OmniModel",
+                                "vllm_gaudi.models.qwen2_5_omni_thinker:HpuQwen2_5OmniThinkerForConditionalGeneration")
+
+    ModelRegistry.register_model("Qwen2_5OmniForConditionalGeneration",
+                                "vllm_gaudi.models.qwen2_5_omni_thinker:HpuQwen2_5OmniThinkerForConditionalGeneration")
