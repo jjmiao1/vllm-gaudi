@@ -27,18 +27,13 @@ class HpuQwen2_5OmniThinkerForConditionalGeneration(Qwen2_5OmniThinkerForConditi
         self.audio_tower = Qwen2_5OmniAudioEncoderStaticShape(
             thinker_config.audio_config)
         
-        if multimodal_config.get_limit_per_prompt("image") or \
-           multimodal_config.get_limit_per_prompt("video"):
-            
-            self.visual = Qwen2_5_VisionTransformerStaticShape(
-                vision_config=thinker_config.vision_config,
-                norm_eps=getattr(thinker_config.text_config, "rms_norm_eps", 1e-6),
-                quant_config=quant_config,
-                prefix=maybe_prefix(prefix, "visual"),
-                multimodal_config=multimodal_config,
-            )
-        else:
-            self.visual = None
+
+        self.visual = Qwen2_5_VisionTransformerStaticShape(
+            vision_config=thinker_config.vision_config,
+            norm_eps=getattr(thinker_config.text_config, "rms_norm_eps", 1e-6),
+            quant_config=quant_config,
+            prefix=maybe_prefix(prefix, "visual"),
+        )
 
     def _process_image_input(self, image_input):
         if image_input["type"] == "image_embeds":
@@ -141,8 +136,7 @@ class Qwen2_5OmniAudioAttention(nn.Module):
         # Detect attention implementation.
         self.attn_backend = get_vit_attn_backend(
             head_size=self.head_dim,
-            dtype=torch.get_default_dtype(),
-            attn_backend_override=None,)
+            dtype=torch.get_default_dtype(),)
         if self.attn_backend not in {
             AttentionBackendEnum.FLASH_ATTN,
             AttentionBackendEnum.TORCH_SDPA,
