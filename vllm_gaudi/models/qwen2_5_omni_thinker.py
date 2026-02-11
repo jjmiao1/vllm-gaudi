@@ -524,7 +524,9 @@ class Qwen2_5OmniAudioEncoderStaticShape(Qwen2_5OmniAudioEncoder):
         padded_mask=None,
         padded_mask_after_cnn=None,
         attention_mask=None,
+        bypass_hpu_graphs: Optional[bool] = None,
     ):
+        _ = bypass_hpu_graphs
         padded_embed = nn.functional.gelu(
             self.conv1(input_features)) * padded_mask
         padded_embed = nn.functional.gelu(\
@@ -638,7 +640,6 @@ class Qwen2_5OmniAudioEncoderStaticShape(Qwen2_5OmniAudioEncoder):
                 use_graph = audio_buckets.use_graph(padded_len)
                 extra_forward_kwargs.update(
                     {"bypass_hpu_graphs": not use_graph})
-                print(f"DEBUG: Using graph: {use_graph}")
             
             print("DEBUG: Before forward")
             audio_features = self.forward(padded_feature, padded_aftercnn_lens,
