@@ -44,6 +44,10 @@ MULTIMODAL_CONFIG = {
         'is_batch_based': False,
         'buckets': [1600, 2048, 3072, 6144, 8192, 131076]
     },
+    'qwen3_omni_moe': {
+        'is_batch_based': False,
+        'buckets': [1600, 3136, 4096, 6400, 7744, 9216, 12544, 131076]
+    },
 }
 
 
